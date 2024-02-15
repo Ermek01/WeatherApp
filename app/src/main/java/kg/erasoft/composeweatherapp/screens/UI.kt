@@ -1,34 +1,40 @@
 package kg.erasoft.composeweatherapp.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kg.erasoft.composeweatherapp.data.WeatherModel
 import kg.erasoft.composeweatherapp.ui.theme.BlueLight
 
-@Preview(showBackground = true)
 @Composable
-fun ListItem(item: WeatherModel) {
+fun ListItem(item: WeatherModel, currentDay: MutableState<WeatherModel>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 3.dp),
+            .padding(top = 3.dp)
+            .clickable {
+                if (item.hours.isNotEmpty()) currentDay.value = item else return@clickable
+            },
         colors = CardDefaults.cardColors(containerColor = BlueLight),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(5.dp)
@@ -42,7 +48,11 @@ fun ListItem(item: WeatherModel) {
                 Text(text = item.time)
                 Text(text = item.condition, color = Color.White)
             }
-            Text(text = item.currentTemp.ifEmpty { "${item.minTemp}/${item.maxTemp}" }, color = Color.White, style = TextStyle(fontSize = 25.sp))
+            Text(
+                text = item.currentTemp.ifEmpty { "${item.maxTemp.toFloat().toInt()}°C/${item.minTemp.toFloat().toInt()}°C" },
+                color = Color.White,
+                style = TextStyle(fontSize = 25.sp)
+            )
             AsyncImage(
                 model = "https:${item.icon}",
                 contentDescription = "asyncImg",
@@ -50,6 +60,17 @@ fun ListItem(item: WeatherModel) {
                     .padding(end = 8.dp)
                     .size(35.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun MainList(list: List<WeatherModel>, currentDay: MutableState<WeatherModel>) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        itemsIndexed(
+            list
+        ) { _, item ->
+            ListItem(item = item, currentDay)
         }
     }
 }

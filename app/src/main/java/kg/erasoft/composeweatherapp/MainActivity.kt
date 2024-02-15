@@ -36,7 +36,20 @@ class MainActivity : ComponentActivity() {
                 val daysList = remember {
                     mutableStateOf(listOf<WeatherModel>())
                 }
-                getData("Bishkek", this, daysList)
+
+                val currentDay = remember {
+                    mutableStateOf(WeatherModel(
+                        "",
+                        "",
+                        "0.0",
+                        "",
+                        "",
+                        "0.0",
+                        "0.0",
+                        ""
+                    ))
+                }
+                getData("Bishkek", this, daysList, currentDay)
                 Image(
                     painter = painterResource(id = R.drawable.bg_weather),
                     contentDescription = "bg",
@@ -46,8 +59,8 @@ class MainActivity : ComponentActivity() {
                     contentScale = ContentScale.FillBounds
                 )
                 Column {
-                    MainCard()
-                    TabLayout(daysList)
+                    MainCard(currentDay)
+                    TabLayout(daysList, currentDay)
                 }
 
             }
@@ -55,7 +68,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun getData(city: String, context: Context, daysList: MutableState<List<WeatherModel>>) {
+private fun getData(
+    city: String,
+    context: Context,
+    daysList: MutableState<List<WeatherModel>>,
+    сurrentDay: MutableState<WeatherModel>
+) {
     val url = "https://api.weatherapi.com/v1/forecast.json?" +
             "q=$city" +
             "&days=10" +
@@ -68,6 +86,7 @@ private fun getData(city: String, context: Context, daysList: MutableState<List<
         { result ->
             Log.d("ololo", "getData: $result")
             val list = getWeatherByDays(result)
+            сurrentDay.value = list[0]
             daysList.value = list
         },
         { error ->
