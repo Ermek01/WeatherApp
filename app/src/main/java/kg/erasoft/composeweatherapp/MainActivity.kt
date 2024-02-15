@@ -20,6 +20,7 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import kg.erasoft.composeweatherapp.data.WeatherModel
+import kg.erasoft.composeweatherapp.screens.DialogSearch
 import kg.erasoft.composeweatherapp.screens.MainCard
 import kg.erasoft.composeweatherapp.screens.TabLayout
 import kg.erasoft.composeweatherapp.ui.theme.ComposeWeatherAppTheme
@@ -28,6 +29,8 @@ import org.json.JSONObject
 const val API_KEY = "07b3e3bc0e364830a8d62752241402"
 
 class MainActivity : ComponentActivity() {
+
+    var city = "Bishkek"
     @SuppressLint("RememberReturnType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,18 +41,29 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val currentDay = remember {
-                    mutableStateOf(WeatherModel(
-                        "",
-                        "",
-                        "0.0",
-                        "",
-                        "",
-                        "0.0",
-                        "0.0",
-                        ""
-                    ))
+                    mutableStateOf(
+                        WeatherModel(
+                            "",
+                            "",
+                            "0.0",
+                            "",
+                            "",
+                            "0.0",
+                            "0.0",
+                            ""
+                        )
+                    )
                 }
-                getData("Bishkek", this, daysList, currentDay)
+                val dialogState = remember {
+                    mutableStateOf(false)
+                }
+                if (dialogState.value) {
+                    DialogSearch(dialogState, onSubmit = {
+                        city = it
+                        getData(city, this, daysList, currentDay)
+                    })
+                }
+                getData(city, this, daysList, currentDay)
                 Image(
                     painter = painterResource(id = R.drawable.bg_weather),
                     contentDescription = "bg",
@@ -59,7 +73,11 @@ class MainActivity : ComponentActivity() {
                     contentScale = ContentScale.FillBounds
                 )
                 Column {
-                    MainCard(currentDay)
+                    MainCard(currentDay, onClickSync = {
+                        getData(city, this@MainActivity, daysList, currentDay)
+                    }, onClickSearch = {
+                        dialogState.value = true
+                    })
                     TabLayout(daysList, currentDay)
                 }
 
